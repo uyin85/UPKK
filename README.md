@@ -36,7 +36,20 @@ Stack: Cloudflare Workers + Workflows + D1 + R2 + Vectorize + Workers AI, Gemini
 | Pengimbang | `src/agents/balancer.js` | Taburan jawapan A/B/C/D sekata |
 | Hakim | `src/agents/pipeline.js` | Gabung keputusan, skor QA, simpan ke barisan semakan |
 
-## Persediaan (sekali sahaja)
+## Persediaan tanpa terminal (guna browser sahaja)
+
+Tambah secret ini di GitHub → Settings → Secrets and variables → Actions → New repository secret, kemudian buka tab Actions → "Deploy UPKK Pro" → Run workflow. Workflow akan cipta indeks Vectorize, kemas kini D1, set secret Worker dan deploy.
+
+| Secret | Dari mana |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | dash.cloudflare.com → ikon profil → My Profile → API Tokens → Create Token → template "Edit Cloudflare Workers", tambah Account › D1 › Edit dan Account › Vectorize › Edit |
+| `CLOUDFLARE_ACCOUNT_ID` | dash.cloudflare.com → Workers & Pages → panel kanan "Account ID" |
+| `GEMINI_API_KEY` | aistudio.google.com/apikey → Create API key |
+| `ADMIN_TOKEN` | Rentetan rawak panjang pilihan anda (kata laluan panel ustaz) |
+| `MCP_TOKEN` | Rentetan rawak panjang lain (untuk agen MCP) |
+| `HERMES_URL`, `HERMES_API_KEY`, `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET` | Pilihan — untuk penyelesai buta kedua di Modal |
+
+## Persediaan dengan terminal (alternatif)
 
 ```bash
 npm install
