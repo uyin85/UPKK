@@ -21,6 +21,10 @@ export function modelChain(env, preferred) {
   return chain;
 }
 
+// Model yang kuota hariannya habis diingat (per isolate) supaya panggilan seterusnya tidak membazir
+const exhausted = new Map(); // model -> masa tamat (ms)
+const isExhausted = (m) => (exhausted.get(m) || 0) > Date.now();
+
 export async function gemini(env, { system, prompt, schema, temperature = 0.4, model }) {
   const chain = modelChain(env, model);
   const body = JSON.stringify({
@@ -34,17 +38,24 @@ export async function gemini(env, { system, prompt, schema, temperature = 0.4, m
   });
 
   const errors = [];
-  for (const m of chain) {
-    if (m.startsWith('workers-ai:')) {
-      try {
-        return await workersAiJson(env, m.slice(11), { system, prompt, schema, temperature });
-      } catch (e) {
-        errors.push(`${m}: ${String(e.message || e).slice(0, 150)}`);
-        continue;
+  // Pusingan 1: cuba setiap model sekali, langkau terus bila kena had.
+  // Pusingan 2 (jika semua kena had per minit sahaja): tunggu retryDelay terpendek, cuba lagi.
+  for (let round = 0; round < 2; round++) {
+    let minDelay = Infinity;
+    for (const m of chain) {
+      if (m.startsWith('workers-ai:')) {
+        // Utamakan Gemini: jika ada model Gemini yang cuma kena had per minit, tunggu dulu sebelum guna Llama
+        if (round === 0 && minDelay !== Infinity) continue;
+        try {
+          return await workersAiJson(env, m.slice(11), { system, prompt, schema, temperature });
+        } catch (e) {
+          errors.push(`${m}: ${String(e.message || e).slice(0, 120)}`);
+          continue;
+        }
       }
-    }
-    if (!env.GEMINI_API_KEY) { errors.push(`${m}: GEMINI_API_KEY belum ditetapkan`); continue; }
-    for (let attempt = 0; attempt < 3; attempt++) {
+      if (!env.GEMINI_API_KEY) { errors.push(`${m}: GEMINI_API_KEY belum ditetapkan`); continue; }
+      if (isExhausted(m)) continue;
+
       const res = await fetch(`${GEMINI_BASE}/${m}:generateContent`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
@@ -54,21 +65,27 @@ export async function gemini(env, { system, prompt, schema, temperature = 0.4, m
         const data = await res.json();
         const parts = data?.candidates?.[0]?.content?.parts || [];
         const text = parts.filter((p) => !p.thought && typeof p.text === 'string').map((p) => p.text).join('');
-        return parseJsonLoose(text);
-      }
-      const errText = await res.text();
-      const err = `${m} ${res.status}: ${errText.replace(/\s+/g, ' ').slice(0, 150)}`;
-      if (res.status === 429 || res.status >= 500) {
-        if (/PerDay|per day|limit: 0/i.test(errText) || attempt === 2) { errors.push(err); break; }
-        const delay = Number((errText.match(/"retryDelay":\s*"(\d+(?:\.\d+)?)s"/) || [])[1] || 15);
-        await sleep(Math.min(delay, 45) * 1000 + 500);
+        if (text) return parseJsonLoose(text);
+        errors.push(`${m}: respons kosong (${data?.candidates?.[0]?.finishReason || 'tiada calon'})`);
         continue;
       }
-      if (res.status === 403 || res.status === 404) { errors.push(err); break; }
-      throw new Error('Gemini ' + err);
+      const errText = await res.text();
+      errors.push(`${m} ${res.status}: ${errText.replace(/\s+/g, ' ').slice(0, 120)}`);
+      if (res.status === 429 && /PerDay|per day|limit: 0/i.test(errText)) {
+        exhausted.set(m, Date.now() + 60 * 60 * 1000); // langkau model ini selama 1 jam
+      } else if (res.status === 429 || res.status >= 500) {
+        const d = Number((errText.match(/"retryDelay":\s*"(\d+(?:\.\d+)?)s"/) || [])[1] || 15);
+        minDelay = Math.min(minDelay, d);
+      } else if (res.status === 404 || res.status === 403) {
+        exhausted.set(m, Date.now() + 6 * 60 * 60 * 1000); // model tiada / tiada akses
+      } else {
+        throw new Error('Gemini ' + errors.at(-1)); // 400: permintaan rosak
+      }
     }
+    if (round === 0 && minDelay !== Infinity) await sleep(Math.min(minDelay, 45) * 1000 + 500);
+    else break;
   }
-  throw new Error('Semua model gagal → ' + errors.join(' | '));
+  throw new Error('Semua model gagal → ' + errors.slice(-10).join(' | '));
 }
 
 // Lapisan terakhir: Workers AI (binding AI Cloudflare), mod JSON
