@@ -1,0 +1,6 @@
+GEMINI_API_KEY=
+HERMES_URL=https://<workspace>--upkk-hermes-serve.modal.run
+HERMES_API_KEY=
+ADMIN_TOKEN=tukar-kepada-rentetan-panjang
+MCP_TOKEN=tukar-kepada-rentetan-panjang-lain
+SHOW_PENDING=true

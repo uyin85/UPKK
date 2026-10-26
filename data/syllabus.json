@@ -1,0 +1,108 @@
+{
+  "_nota": "DRAF peta topik KAFA 2.0 untuk app. verified=false bermaksud ustaz/ustazah perlu padankan dengan DSKP / buku teks KAFA rasmi dan isi 'sk' (kod standard kandungan) sebelum topik dibuka kepada pelajar. basic=true = perkara asas (Bahagian A).",
+  "sra_selangor": {
+    "_nota": "SRA JAIS menggunakan nama subjek berbeza. Topik khusus negeri ditambah dengan stream='SRA' selepas silibus JAIS diperoleh.",
+    "mapping": { "Tauhid": "akidah", "Fiqh": "ibadah", "Akhlak": "adab", "Tarikh": "sirah", "Bahasa Arab": "arab", "Al-Quran": "quran" }
+  },
+  "topics": {
+    "akidah": [
+      { "id": "akd-01", "title": "Rukun Iman", "basic": true },
+      { "id": "akd-02", "title": "Beriman kepada Allah: sifat wajib bagi Allah", "basic": true },
+      { "id": "akd-03", "title": "Sifat mustahil dan sifat harus bagi Allah" },
+      { "id": "akd-04", "title": "Asmaul Husna terpilih dan maksudnya" },
+      { "id": "akd-05", "title": "Beriman kepada malaikat dan tugas-tugasnya", "basic": true },
+      { "id": "akd-06", "title": "Beriman kepada kitab-kitab Allah dan suhuf" },
+      { "id": "akd-07", "title": "Beriman kepada rasul: 25 rasul, Ulul Azmi, sifat wajib rasul" },
+      { "id": "akd-08", "title": "Beriman kepada hari akhirat: alam barzakh, tanda-tanda kiamat" },
+      { "id": "akd-09", "title": "Beriman kepada qada' dan qadar" },
+      { "id": "akd-10", "title": "Perkara yang merosakkan akidah: syirik dan khurafat" }
+    ],
+    "ibadah": [
+      { "id": "ibd-01", "title": "Rukun Islam", "basic": true },
+      { "id": "ibd-02", "title": "Bahagian air dan hukum penggunaannya" },
+      { "id": "ibd-03", "title": "Najis: jenis dan cara menyucikan" },
+      { "id": "ibd-04", "title": "Istinjak dan adab qada' hajat" },
+      { "id": "ibd-05", "title": "Wuduk: fardu, sunat dan perkara membatalkan", "basic": true },
+      { "id": "ibd-06", "title": "Mandi wajib: sebab dan rukun" },
+      { "id": "ibd-07", "title": "Tayammum" },
+      { "id": "ibd-08", "title": "Solat fardu: syarat wajib, syarat sah, rukun", "basic": true },
+      { "id": "ibd-09", "title": "Waktu solat dan bilangan rakaat", "basic": true },
+      { "id": "ibd-10", "title": "Perkara yang membatalkan solat" },
+      { "id": "ibd-11", "title": "Azan dan iqamah" },
+      { "id": "ibd-12", "title": "Solat berjemaah dan solat Jumaat" },
+      { "id": "ibd-13", "title": "Solat sunat terpilih" },
+      { "id": "ibd-14", "title": "Sujud sahwi" },
+      { "id": "ibd-15", "title": "Solat jamak dan qasar" },
+      { "id": "ibd-16", "title": "Puasa Ramadan: rukun, syarat, perkara membatalkan" },
+      { "id": "ibd-17", "title": "Zakat fitrah" }
+    ],
+    "sirah": [
+      { "id": "srh-01", "title": "Keadaan masyarakat Arab sebelum Islam" },
+      { "id": "srh-02", "title": "Kelahiran Nabi Muhammad s.a.w. dan keluarga baginda", "basic": true },
+      { "id": "srh-03", "title": "Zaman kanak-kanak dan remaja Rasulullah" },
+      { "id": "srh-04", "title": "Rasulullah berniaga dan berkahwin dengan Khadijah" },
+      { "id": "srh-05", "title": "Peristiwa peletakan Hajar Aswad" },
+      { "id": "srh-06", "title": "Penurunan wahyu pertama di Gua Hira'", "basic": true },
+      { "id": "srh-07", "title": "Dakwah secara sembunyi dan terang-terangan" },
+      { "id": "srh-08", "title": "Penentangan Quraisy dan hijrah ke Habsyah" },
+      { "id": "srh-09", "title": "Tahun Kesedihan dan dakwah ke Taif" },
+      { "id": "srh-10", "title": "Peristiwa Israk dan Mikraj" },
+      { "id": "srh-11", "title": "Perjanjian Aqabah dan hijrah ke Madinah", "basic": true },
+      { "id": "srh-12", "title": "Pembinaan Masjid Quba' dan Masjid Nabawi" },
+      { "id": "srh-13", "title": "Piagam Madinah dan persaudaraan Ansar-Muhajirin" },
+      { "id": "srh-14", "title": "Peperangan zaman Rasulullah: Badar, Uhud, Khandak" },
+      { "id": "srh-15", "title": "Perjanjian Hudaibiah dan pembukaan kota Makkah" },
+      { "id": "srh-16", "title": "Haji Wada' dan kewafatan Rasulullah" },
+      { "id": "srh-17", "title": "Khulafa' Ar-Rasyidin" }
+    ],
+    "adab": [
+      { "id": "adb-01", "title": "Adab terhadap ibu bapa", "basic": true },
+      { "id": "adb-02", "title": "Adab terhadap guru dan adab menuntut ilmu", "basic": true },
+      { "id": "adb-03", "title": "Adab makan dan minum", "basic": true },
+      { "id": "adb-04", "title": "Adab tidur dan bangun tidur" },
+      { "id": "adb-05", "title": "Adab di masjid" },
+      { "id": "adb-06", "title": "Adab membaca dan mendengar al-Quran" },
+      { "id": "adb-07", "title": "Adab berpakaian dan berhias" },
+      { "id": "adb-08", "title": "Adab memberi dan menjawab salam" },
+      { "id": "adb-09", "title": "Adab bercakap dan bergaul" },
+      { "id": "adb-10", "title": "Adab terhadap jiran dan tetamu" },
+      { "id": "adb-11", "title": "Adab bermusafir" },
+      { "id": "adb-12", "title": "Akhlak terpuji: amanah, jujur, sabar, pemaaf" },
+      { "id": "adb-13", "title": "Akhlak tercela dan cara menjauhinya" }
+    ],
+    "jawi": [
+      { "id": "jwi-01", "title": "Huruf Jawi dan bentuk huruf", "basic": true },
+      { "id": "jwi-02", "title": "Ejaan suku kata terbuka dan tertutup", "basic": true },
+      { "id": "jwi-03", "title": "Ejaan kata dasar" },
+      { "id": "jwi-04", "title": "Ejaan kata berimbuhan" },
+      { "id": "jwi-05", "title": "Ejaan kata pinjaman" },
+      { "id": "jwi-06", "title": "Membaca dan memahami petikan Jawi" },
+      { "id": "jwi-07", "title": "Khat Nasakh (pengenalan)", "mcq": false },
+      { "id": "jwi-08", "title": "Khat Riq'ah (pengenalan)", "mcq": false }
+    ],
+    "arab": [
+      { "id": "arb-01", "title": "Perkenalan diri dan keluarga", "basic": true },
+      { "id": "arb-02", "title": "Sekolah dan alat tulis", "basic": true },
+      { "id": "arb-03", "title": "Anggota badan" },
+      { "id": "arb-04", "title": "Warna dan nombor" },
+      { "id": "arb-05", "title": "Hari dan bulan" },
+      { "id": "arb-06", "title": "Makanan dan minuman" },
+      { "id": "arb-07", "title": "Rumah dan masjid" },
+      { "id": "arb-08", "title": "Kata ganti nama (dhamir)" },
+      { "id": "arb-09", "title": "Kata nama isyarat" },
+      { "id": "arb-10", "title": "Mufrad, muthanna dan jamak" },
+      { "id": "arb-11", "title": "Muzakkar dan muannath" },
+      { "id": "arb-12", "title": "Fi'il madhi dan fi'il mudhari' (asas)" },
+      { "id": "arb-13", "title": "Kosa kata al-Quran terpilih" }
+    ],
+    "quran": [
+      { "id": "qrn-01", "title": "Hukum nun mati dan tanwin", "basic": true },
+      { "id": "qrn-02", "title": "Hukum mim mati" },
+      { "id": "qrn-03", "title": "Mad asli dan mad far'i asas" },
+      { "id": "qrn-04", "title": "Qalqalah", "basic": true },
+      { "id": "qrn-05", "title": "Hukum lam jalalah dan ra'" },
+      { "id": "qrn-06", "title": "Tanda waqaf" },
+      { "id": "qrn-07", "title": "Surah hafazan dan pengajarannya" }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "UPKK Pro — Latihan Soalan KAFA",
+  "short_name": "UPKK Pro",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#edf4ef",
+  "theme_color": "#0e4f55",
+  "lang": "ms",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

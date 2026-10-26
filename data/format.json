@@ -1,0 +1,41 @@
+{
+  "_nota": "Format UPKK mulai 2024 (Kurikulum KAFA 2.0). Bahagian bertanda 'sahkan' perlu dipadankan dengan Surat Siaran Format Instrumen UPKK JAKIM sebelum dilancar.",
+  "exam": {
+    "name": "Ujian Penilaian Kelas Al-Quran dan Fardu Ain (UPKK)",
+    "grade": "Tahun 5 KAFA",
+    "written_duration_minutes": 75,
+    "written_total_marks": 70,
+    "quran_total_marks": 80,
+    "coverage": "Perkara asas sahaja bagi Tahun 1 dan 2; semua standard kandungan dan standard pembelajaran Tahun 3 hingga 5 (KAFA 2.0)",
+    "section_a": "Bahagian A setiap kertas menguji perkara asas Fardu Ain"
+  },
+  "subjects": [
+    { "code": "akidah",  "name": "Akidah",            "jawi": "عقيدة",          "upkk_code": "UPKK 02", "assessment": "bertulis", "mcq": true,  "sort": 1 },
+    { "code": "ibadah",  "name": "Ibadah",            "jawi": "عبادة",          "upkk_code": "UPKK 07", "assessment": "bertulis", "mcq": true,  "sort": 2 },
+    { "code": "sirah",   "name": "Sirah",             "jawi": "سيرة",           "upkk_code": null,      "assessment": "bertulis", "mcq": true,  "sort": 3 },
+    { "code": "adab",    "name": "Adab",              "jawi": "ادب",            "upkk_code": "UPKK 04", "assessment": "bertulis", "mcq": true,  "sort": 4 },
+    { "code": "jawi",    "name": "Jawi dan Khat",     "jawi": "جاوي دان خط",    "upkk_code": null,      "assessment": "bertulis", "mcq": true,  "sort": 5 },
+    { "code": "arab",    "name": "Bahasa Arab",       "jawi": "بهاس عرب",       "upkk_code": null,      "assessment": "bertulis", "mcq": true,  "sort": 6 },
+    { "code": "quran",   "name": "Al-Quran (Teori Tajwid)", "jawi": "القرءان", "upkk_code": "UPKK 01", "assessment": "lisan",    "mcq": true,  "sort": 7, "nota": "Penilaian sebenar secara lisan. MCQ di app hanya untuk teori tajwid." },
+    { "code": "pchi",    "name": "Penghayatan Cara Hidup Islam", "jawi": null,   "upkk_code": null,      "assessment": "pentaksiran", "mcq": false, "sort": 8 },
+    { "code": "solat",   "name": "Amali Solat",       "jawi": null,             "upkk_code": null,      "assessment": "amali",    "mcq": false, "sort": 9 }
+  ],
+  "mock_exam": {
+    "_sahkan": "Bilangan item objektif sebenar setiap kertas belum disahkan. Ubah di sini tanpa ubah kod.",
+    "items": 30,
+    "duration_minutes": 75,
+    "basic_ratio": 0.3
+  },
+  "readiness_bands": {
+    "_nota": "ANGGARAN dalaman app, BUKAN sempadan gred rasmi JAKIM.",
+    "A": 0.8,
+    "B": 0.65,
+    "C": 0.5,
+    "D": 0.4
+  },
+  "generation": {
+    "level_mix": { "ingat": 0.4, "faham": 0.4, "aplikasi": 0.2 },
+    "max_per_batch": 10,
+    "target_per_topic": 40
+  }
+}

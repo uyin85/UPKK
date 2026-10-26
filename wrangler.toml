@@ -1,0 +1,51 @@
+name = "upkk-pro"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+upload_source_maps = true
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/admin/api/*", "/mcp"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "upkk"
+database_id = "ef36be22-045a-4866-a4f7-5b49a6cc8549"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "upkk-sources"
+
+# Indeks bank soalan + penanda kertas lepas (keaslian/duplikasi)
+[[vectorize]]
+binding = "QVEC"
+index_name = "upkk-questions"
+
+# Indeks petikan sumber (grounding penjana & penyemak syariah)
+[[vectorize]]
+binding = "SVEC"
+index_name = "upkk-sources"
+
+[ai]
+binding = "AI"
+
+[[workflows]]
+name = "upkk-generate"
+binding = "GENERATOR"
+class_name = "GenerateWorkflow"
+# 2:15 pagi waktu Malaysia setiap hari: sentinel kualiti + jana soalan untuk topik paling memerlukan
+schedules = ["15 18 * * *"]
+
+[vars]
+GEMINI_MODEL = "gemini-pro-latest"
+HERMES_MODEL = "hermes"
+FREE_DAILY_LIMIT = "15"
+DAILY_GEN_COUNT = "8"
+SHOW_PENDING = "false"
+MCP_CAN_APPROVE = "false"
+
+# Rahsia (npx wrangler secret put NAMA):
+#   GEMINI_API_KEY, HERMES_URL, HERMES_API_KEY, ADMIN_TOKEN, MCP_TOKEN
