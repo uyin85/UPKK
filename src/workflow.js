@@ -8,7 +8,9 @@ import { planBatch } from './agents/planner.js';
 import { retrieveContext, generateQuestions } from './agents/generator.js';
 import { qaOne, saveQuestion } from './agents/pipeline.js';
 
-const RETRY = { retries: { limit: 3, delay: '20 seconds', backoff: 'exponential' }, timeout: '5 minutes' };
+const RETRY = { retries: { limit: 3, delay: '5 seconds', backoff: 'exponential' }, timeout: '1 minute' };
+// Panggilan model: cuba semula sekali sahaja supaya ralat (kunci API/model salah) cepat dipaparkan di panel
+const LLM_RETRY = { retries: { limit: 1, delay: '10 seconds', backoff: 'constant' }, timeout: '4 minutes' };
 
 export class GenerateWorkflow extends WorkflowEntrypoint {
   async run(event, step) {
@@ -42,26 +44,38 @@ export class GenerateWorkflow extends WorkflowEntrypoint {
       if (!topic) return this.close(step, batchId, { error: 'Topik tidak wujud' });
       context = await step.do('retrieve', RETRY, () => retrieveContext(env, topic));
     } else {
-      const plan = await step.do('plan', RETRY, () => planBatch(env, { subject: p.subject, topicId: p.topic_id, count }));
-      log.push(`Topik: ${plan.topic.id} ${plan.topic.title}`);
-      await step.do('batch-topic', RETRY, () =>
-        env.DB.prepare('UPDATE batches SET subject=?, topic_id=? WHERE id=?').bind(plan.topic.subject, plan.topic.id, batchId).run().then(() => true)
-      );
-      context = await step.do('retrieve', RETRY, () => retrieveContext(env, plan.topic));
-      log.push(`Sumber: ${context.length} petikan`);
-      drafts = await step.do('generate', RETRY, () => generateQuestions(env, plan, context));
-      log.push(`Draf: ${drafts.length}`);
+      try {
+        const plan = await step.do('plan', RETRY, () => planBatch(env, { subject: p.subject, topicId: p.topic_id, count }));
+        log.push(`Topik: ${plan.topic.id} ${plan.topic.title}`);
+        await step.do('batch-topic', RETRY, () =>
+          env.DB.prepare('UPDATE batches SET subject=?, topic_id=?, log=? WHERE id=?').bind(plan.topic.subject, plan.topic.id, JSON.stringify([...log, 'Menjana soalan…']), batchId).run().then(() => true)
+        );
+        context = await step.do('retrieve', RETRY, () => retrieveContext(env, plan.topic));
+        log.push(`Sumber: ${context.length} petikan`);
+        drafts = await step.do('generate', LLM_RETRY, () => generateQuestions(env, plan, context));
+        log.push(`Draf: ${drafts.length}`);
+        await step.do('batch-progress', RETRY, () =>
+          env.DB.prepare('UPDATE batches SET generated=?, log=? WHERE id=?').bind(drafts.length, JSON.stringify([...log, 'Semakan QA…']), batchId).run().then(() => true)
+        );
+      } catch (e) {
+        return this.close(step, batchId, { log, error: 'Gagal: ' + String(e?.message || e).slice(0, 400) });
+      }
     }
 
     let passed = 0;
     let rejected = 0;
     for (let i = 0; i < drafts.length; i++) {
-      const r = await step.do(`qa-${i}`, RETRY, async () => {
-        const result = await qaOne(env, drafts[i], context);
-        if (result.decision !== 'save') return { saved: false, reasons: result.report.reasons, stem: drafts[i].stem.slice(0, 80) };
-        const id = await saveQuestion(env, result, { batchId, origin: p.origin || (mode === 'single' ? 'manual' : 'agent'), stream: p.stream || 'KAFA' });
-        return { saved: true, id, score: result.score };
-      });
+      let r;
+      try {
+        r = await step.do(`qa-${i}`, LLM_RETRY, async () => {
+          const result = await qaOne(env, drafts[i], context);
+          if (result.decision !== 'save') return { saved: false, reasons: result.report.reasons, stem: drafts[i].stem.slice(0, 80) };
+          const id = await saveQuestion(env, result, { batchId, origin: p.origin || (mode === 'single' ? 'manual' : 'agent'), stream: p.stream || 'KAFA' });
+          return { saved: true, id, score: result.score };
+        });
+      } catch (e) {
+        r = { saved: false, reasons: ['Ralat QA: ' + String(e?.message || e).slice(0, 200)], stem: String(drafts[i].stem || '').slice(0, 80) };
+      }
       if (r.saved) passed++;
       else {
         rejected++;
