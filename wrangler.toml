@@ -40,8 +40,11 @@ class_name = "GenerateWorkflow"
 schedules = ["15 18 * * *"]
 
 [vars]
-GEMINI_MODEL = "gemini-flash-latest"   # tukar ke "gemini-pro-latest" selepas billing Google AI Studio diaktifkan
-GEMINI_FALLBACK_MODEL = "gemini-flash-latest"
+# Rantai model ikut urutan; bila satu kena had/kuota habis, terus ke model seterusnya.
+# Selepas billing Google AI Studio aktif, letak "gemini-pro-latest," di hadapan.
+GEMINI_MODELS = "gemini-flash-latest,gemini-flash-lite-latest"
+# Lapisan terakhir (tidak guna kuota Google). Letak WORKERS_AI_FALLBACK = "false" untuk matikan.
+WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 HERMES_MODEL = "hermes"
 FREE_DAILY_LIMIT = "15"
 DAILY_GEN_COUNT = "8"

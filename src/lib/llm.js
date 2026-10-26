@@ -2,17 +2,27 @@
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-const FALLBACK_MODEL = 'gemini-flash-latest';
+const DEFAULT_CHAIN = 'gemini-flash-latest,gemini-flash-lite-latest';
+const DEFAULT_WORKERS_AI = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Gemini dengan pengendalian kuota:
-//  - 429 kerana had per minit → tunggu (ikut retryDelay Google) dan cuba semula
-//  - model ditolak (kuota 0 / tiada akses) → beralih ke GEMINI_FALLBACK_MODEL (lalai Flash)
+// Rantai model (lapisan sandaran). Ditetapkan melalui GEMINI_MODELS dalam wrangler.toml:
+//   1..n  Model Gemini ikut urutan (contoh: pro → flash → flash-lite)
+//   akhir Workers AI (Llama 3.3 70B) — tidak bergantung pada kuota Google
+// Peraturan setiap model:
+//   429 had per minit  → tunggu ikut retryDelay Google, cuba semula (maks 3 kali)
+//   429 had harian / kuota 0, 403, 404, 5xx berterusan → terus ke model seterusnya
+//   400 (permintaan rosak) → berhenti, kerana model lain akan gagal sama
+export function modelChain(env, preferred) {
+  const list = (env.GEMINI_MODELS || [env.GEMINI_MODEL, env.GEMINI_FALLBACK_MODEL].filter(Boolean).join(',') || DEFAULT_CHAIN)
+    .split(',').map((s) => s.trim()).filter(Boolean);
+  const chain = preferred ? [preferred, ...list.filter((m) => m !== preferred)] : list;
+  if (env.WORKERS_AI_FALLBACK !== 'false' && env.AI) chain.push('workers-ai:' + (env.WORKERS_AI_MODEL || DEFAULT_WORKERS_AI));
+  return chain;
+}
+
 export async function gemini(env, { system, prompt, schema, temperature = 0.4, model }) {
-  if (!env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY belum ditetapkan');
-  const primary = model || env.GEMINI_MODEL || FALLBACK_MODEL;
-  const fallback = env.GEMINI_FALLBACK_MODEL || FALLBACK_MODEL;
-  const chain = primary === fallback ? [primary] : [primary, fallback];
+  const chain = modelChain(env, model);
   const body = JSON.stringify({
     systemInstruction: system ? { parts: [{ text: system }] } : undefined,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -23,8 +33,17 @@ export async function gemini(env, { system, prompt, schema, temperature = 0.4, m
     },
   });
 
-  let lastErr;
+  const errors = [];
   for (const m of chain) {
+    if (m.startsWith('workers-ai:')) {
+      try {
+        return await workersAiJson(env, m.slice(11), { system, prompt, schema, temperature });
+      } catch (e) {
+        errors.push(`${m}: ${String(e.message || e).slice(0, 150)}`);
+        continue;
+      }
+    }
+    if (!env.GEMINI_API_KEY) { errors.push(`${m}: GEMINI_API_KEY belum ditetapkan`); continue; }
     for (let attempt = 0; attempt < 3; attempt++) {
       const res = await fetch(`${GEMINI_BASE}/${m}:generateContent`, {
         method: 'POST',
@@ -38,19 +57,39 @@ export async function gemini(env, { system, prompt, schema, temperature = 0.4, m
         return parseJsonLoose(text);
       }
       const errText = await res.text();
-      lastErr = new Error(`Gemini ${res.status} (${m}): ${errText.slice(0, 300)}`);
-      if (res.status === 429 || res.status === 503) {
-        // Kuota harian / tiada kuota untuk model ini → terus ke model sandaran
-        if (/PerDay|limit: 0|free_tier_requests.*limit: 0/i.test(errText)) break;
+      const err = `${m} ${res.status}: ${errText.replace(/\s+/g, ' ').slice(0, 150)}`;
+      if (res.status === 429 || res.status >= 500) {
+        if (/PerDay|per day|limit: 0/i.test(errText) || attempt === 2) { errors.push(err); break; }
         const delay = Number((errText.match(/"retryDelay":\s*"(\d+(?:\.\d+)?)s"/) || [])[1] || 15);
         await sleep(Math.min(delay, 45) * 1000 + 500);
         continue;
       }
-      if (res.status === 404 || res.status === 403) break; // model tiada / tiada akses → cuba sandaran
-      throw lastErr; // 400 dsb: ralat permintaan, jangan ulang
+      if (res.status === 403 || res.status === 404) { errors.push(err); break; }
+      throw new Error('Gemini ' + err);
     }
   }
-  throw lastErr;
+  throw new Error('Semua model gagal → ' + errors.join(' | '));
+}
+
+// Lapisan terakhir: Workers AI (binding AI Cloudflare), mod JSON
+async function workersAiJson(env, model, { system, prompt, schema, temperature }) {
+  const res = await env.AI.run(model, {
+    messages: [...(system ? [{ role: 'system', content: system }] : []), { role: 'user', content: prompt }],
+    temperature,
+    max_tokens: 4096,
+    ...(schema ? { response_format: { type: 'json_schema', json_schema: toJsonSchema(schema) } } : {}),
+  });
+  const out = res?.response ?? res;
+  return typeof out === 'string' ? parseJsonLoose(out) : out;
+}
+
+// Skema Gemini guna jenis huruf besar (OBJECT/STRING); JSON Schema standard guna huruf kecil
+function toJsonSchema(s) {
+  if (Array.isArray(s)) return s.map(toJsonSchema);
+  if (!s || typeof s !== 'object') return s;
+  const o = {};
+  for (const [k, v] of Object.entries(s)) o[k] = k === 'type' && typeof v === 'string' ? v.toLowerCase() : toJsonSchema(v);
+  return o;
 }
 
 // Hermes 4 (Nous Research) dihoskan di Modal melalui vLLM — API serasi OpenAI
