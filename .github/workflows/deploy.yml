@@ -12,13 +12,13 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm ci || npm install
@@ -70,19 +70,19 @@ jobs:
         run: rm -f .secrets.json
 
   hermes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: deploy
     env:
       MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
       HERMES_API_KEY: ${{ secrets.HERMES_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Langkau jika Modal belum disediakan
         id: chk
         run: |
           if [ -n "$MODAL_TOKEN_ID" ] && [ -n "$MODAL_TOKEN_SECRET" ] && [ -n "$HERMES_API_KEY" ]; then echo "run=1" >> "$GITHUB_OUTPUT"; else echo "Modal tidak disediakan — langkau Hermes"; fi
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         if: steps.chk.outputs.run == '1'
         with:
           python-version: '3.12'
